@@ -21,6 +21,38 @@ function init(){
         }),
       });
 
-} //init function ended
-
-//e.feature.getGeometry().getCoordinate()  ---> when listening to the interaction instead of map
+      let draw; // global so we can remove them later
+      draw = new ol.interaction.Draw({ //Point object made
+          source: source,
+          type: 'Point',
+      });
+  
+      draw.setActive(false); //point on the map is inactive
+  
+      map.addInteraction(draw); //point object is added to the map but still hidden
+  
+      //Select Location Button when clicked-->>
+      document.getElementById("selectLocationButton").addEventListener("click", function(){
+          draw.setActive(true); //when button clicked point is activated and viewed on map
+      });
+  
+      draw.on("drawend", (e)=>{ //when draw/point in finished we set the point to inactive
+          draw.setActive(false);
+  
+          jsPanel.create({      //jspanel is pop-upped.
+              headerTitle: 'Location Panel',
+              theme: 'dark',
+              contentSize: {
+                  width: "30%",
+                  height: "30%"
+              },
+              content: '<p style="text-align:center;">X:'+ e.feature.getGeometry().getCoordinates()[0] + 
+              '</p>'+'<p style="text-align:center;">Y:'+ e.feature.getGeometry().getCoordinates()[1] + 
+              '</p>' + '<input type="text" id="name" placeholder="Name of the place.."/>'+
+              '<br><br>'+'<button id="addButton">Add Location</button>'
+          });
+      });
+  
+  } //init function ended
+  
+  //e.feature.getGeometry().getCoordinate()  ---> when listening to the interaction instead of map
