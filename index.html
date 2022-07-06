@@ -5,6 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenLayers</title>
+    <!--jquery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!--toastr js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!--toastr css-->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+    />
 
     <!--openlayers css-->
     <link rel="stylesheet" href="/resources/ol/ol.css" type="text/css" />
@@ -16,9 +27,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <nav>
-      <button id="selectLocationButton">Select Location</button>
-    </nav>
+    <button id="selectLocationButton">Add Location</button>
     <div id="js-map" class="map"></div>
 
     <!--openlayers javascript-->

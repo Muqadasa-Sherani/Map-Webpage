@@ -38,20 +38,42 @@ function init(){
   
       draw.on("drawend", (e)=>{ //when draw/point in finished we set the point to inactive
           draw.setActive(false);
+          var X = e.feature.getGeometry().getCoordinates()[0];
+          var Y = e.feature.getGeometry().getCoordinates()[1];
   
           jsPanel.create({      //jspanel is pop-upped.
               headerTitle: 'Location Panel',
-              theme: 'dark',
+              theme: '#00205c',
               contentSize: {
                   width: "30%",
                   height: "30%"
               },
-              content: '<p style="text-align:center;">X:'+ e.feature.getGeometry().getCoordinates()[0] + 
-              '</p>'+'<p style="text-align:center;">Y:'+ e.feature.getGeometry().getCoordinates()[1] + 
-              '</p>' + '<input type="text" id="name" placeholder="Name of the place.."/>'+
-              '<br><br>'+'<button id="addButton">Add Location</button>'
-          });
-      });
+              content: ' <div class="form" >'+
+              '<label for="x">X: </label>'+'<input type="text" id="x" value="'+X+'" readonly/>' + 
+              '<br><br>'+
+              '<label for="y">Y: </label>'+'<input type="text" id="y" value="'+Y+'" readonly/>' + 
+              '<br><br>'+
+              '<label for="name">Name: </label>'+ '<input type="text" id="name" placeholder="Name of the place.."/>'+
+              '<br><br>'+
+              '<button id="addButton">Add</button>'+
+              '</div>'
+          }); //jspanel is created
+
+          document.getElementById("addButton").addEventListener("click", function(){
+            var name = document.getElementById("name").value; //name value
+
+            toastr.options.closeButton = true; //close icon of toaster notification.
+            toastr.options.progressBar = true; //progress bar of toastr notification.
+            toastr.options.preventDuplicates = true; //prevents duplicates.
+
+            if(name.length < 3){
+              toastr.error('Name must be atleast three characters.', 'Warning!');
+            }else{
+              toastr.success(name +' is added successfully.', 'Success');
+            }
+          });//validation for name characters is done.
+          
+      }); //on drawend event is finished.
   
   } //init function ended
   

@@ -10,5 +10,33 @@ body{
 .map{
     height: 100vh;
     width: 100vw;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: -1;
 }
 
+label {
+    display: inline-block;
+    width: 50px;
+    text-align: left;
+}
+
+.form{
+    margin: 0 auto;
+    width: 250px;
+}
+
+button{
+    position: relative;
+    background-color: #1d90cf;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 52px;
+    cursor: pointer;
+}
