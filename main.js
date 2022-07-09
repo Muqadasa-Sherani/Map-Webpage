@@ -2,79 +2,188 @@ window.onload = init;
 
 function init(){
 
-    const raster = new ol.layer.Tile({ //Tile layer of the map
-        source: new ol.source.OSM(),
-      });
-      
-      const source = new ol.source.Vector();
-
-      const vector = new ol.layer.Vector({ //vector layer of the map
-        source: source
-      });
+  const raster = new ol.layer.Tile({ //Tile layer of the map
+      source: new ol.source.OSM(),
+    });
     
-      const map = new ol.Map({ //the map object...
-        layers: [raster, vector], //...with its layers
-        target: 'js-map', 
-        view: new ol.View({
-          center: [3955818.045998468, 4724642.604322681],
-          zoom:6,
-        }),
+    const source = new ol.source.Vector();
+
+    const vector = new ol.layer.Vector({ //vector layer of the map
+      source: source
+    });
+  
+    const map = new ol.Map({ //the map object...
+      layers: [raster, vector], //...with its layers
+      target: 'js-map', 
+      view: new ol.View({
+        center: [3955818.045998468, 4724642.604322681],
+        zoom:6,
+      }),
+    });
+
+
+    
+    let draw; // global so we can remove them later
+    draw = new ol.interaction.Draw({ //Point object made
+        source: source,
+        type: 'Point',
+    });
+
+    draw.setActive(false); //point on the map is inactive
+
+    map.addInteraction(draw); //point object is added to the map but still hidden
+
+    fetch("https://localhost:7031/Locationt", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => response.json()) //converts the response/output data into json.
+    .then(response=> /*console.log(response)*/{ // response/data is added to the map.
+      /***To draw points on the map:
+       * 1. Create a source, in this case a vector source, with the features you want to draw.
+       * 2. Create a layer, in this case a vector layer, with the source from step 1, and the style you prefer.
+       * 3. Add the style you perfer.***/
+      
+      //const features = [];
+
+      for (i = 0; i < response.length; i++) {
+        let featureStyle = new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 2,
+            fill: new ol.style.Fill({color: 'red'})
+          })
+        });
+        let feature = new ol.Feature({
+          geometry: new ol.geom.Point(
+            [response[i].x, response[i].y])
+        });
+
+        feature.setStyle(featureStyle);
+        source.addFeature(feature);
+      }
+      // create the source and layer for features
+      /*const vectorSource = new ol.source.Vector({
+        features: features
       });
+      const vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        style: new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 2,
+            fill: new ol.style.Fill({color: 'red'})
+          })
+        })
+      });*/
+      // vector layer is added to the map
+      //map.addLayer(vectorLayer);
+    })
+    .catch((error) => {
+      //error, unexpected error happened.
+      toastr.error('Unexpected error occurred.', 'Error');
+    });// GET fetch finished
 
-      let draw; // global so we can remove them later
-      draw = new ol.interaction.Draw({ //Point object made
-          source: source,
-          type: 'Point',
-      });
-  
-      draw.setActive(false); //point on the map is inactive
-  
-      map.addInteraction(draw); //point object is added to the map but still hidden
-  
-      //Select Location Button when clicked-->>
-      document.getElementById("selectLocationButton").addEventListener("click", function(){
-          draw.setActive(true); //when button clicked point is activated and viewed on map
-      });
-  
-      draw.on("drawend", (e)=>{ //when draw/point in finished we set the point to inactive
-          draw.setActive(false);
-          var X = e.feature.getGeometry().getCoordinates()[0];
-          var Y = e.feature.getGeometry().getCoordinates()[1];
-  
-          jsPanel.create({      //jspanel is pop-upped.
-              headerTitle: 'Location Panel',
-              theme: '#00205c',
-              contentSize: {
-                  width: "30%",
-                  height: "30%"
-              },
-              content: ' <div class="form" >'+
-              '<label for="x">X: </label>'+'<input type="text" id="x" value="'+X+'" readonly/>' + 
-              '<br><br>'+
-              '<label for="y">Y: </label>'+'<input type="text" id="y" value="'+Y+'" readonly/>' + 
-              '<br><br>'+
-              '<label for="name">Name: </label>'+ '<input type="text" id="name" placeholder="Name of the place.."/>'+
-              '<br><br>'+
-              '<button id="addButton">Add</button>'+
-              '</div>'
-          }); //jspanel is created
+    //Select Location Button when clicked-->>
+    document.getElementById("selectLocationButton").addEventListener("click", function(){
+      //check for zoom
+      var mapZoomLevel = map.getView().getZoom();
 
-          document.getElementById("addButton").addEventListener("click", function(){
-            var name = document.getElementById("name").value; //name value
+      if(mapZoomLevel < 16){ 
+        //error, the user is too far away they should zoom in more.
+        toastr.warning("Please zoom in more.", "Warning")
+      }else{
+          draw.setActive(true); // when button clicked point is activated and viewed on map
+      }
+    });
 
-            toastr.options.closeButton = true; //close icon of toaster notification.
-            toastr.options.progressBar = true; //progress bar of toastr notification.
-            toastr.options.preventDuplicates = true; //prevents duplicates.
+    draw.on("drawend", (e)=>{ // when draw/point is finished we set the point to inactive
+      draw.setActive(false);
+      
+      var X = e.feature.getGeometry().getCoordinates()[0];
+      var Y = e.feature.getGeometry().getCoordinates()[1];
 
-            if(name.length < 3){
-              toastr.error('Name must be atleast three characters.', 'Warning!');
-            }else{
-              toastr.success(name +' is added successfully.', 'Success');
-            }
-          });//validation for name characters is done.
-          
-      }); //on drawend event is finished.
+      jsPanel.create({      //jspanel is pop-upped.
+          id: "addLocationPanel",
+          headerTitle: 'Location Panel',
+          theme: '#00205c',
+          contentSize: {
+              width: "30%",
+              height: "30%"
+          },
+          content: ' <div class="form" >'+
+          '<label for="x">X: </label>'+'<input type="text" id="x" value="'+X+'" readonly/>' + 
+          '<br><br>'+
+          '<label for="y">Y: </label>'+'<input type="text" id="y" value="'+Y+'" readonly/>' + 
+          '<br><br>'+
+          '<label for="name">Name: </label>'+ '<input type="text" id="name" placeholder="Name of the place.."/>'+
+          '<br><br>'+
+          '<button id="addButton">Add</button>'+
+          '</div>'
+      }); //jspanel is created
+
+      document.getElementById("addButton").addEventListener("click", function(){
+        var name = document.getElementById("name").value; //name value
+
+        toastr.options.closeButton = true; //close icon of toaster notification.
+        toastr.options.progressBar = true; //progress bar of toastr notification.
+        toastr.options.preventDuplicates = false; //prevents duplicates.
+
+        if(name.length < 3){
+          toastr.warning('Name must be atleast three characters.', 'Warning!');
+          return;
+        }
+
+        let data = {
+          X : X,
+          Y : Y,
+          Name : name
+        };
+
+        //POST fetch
+        fetch("https://localhost:7031/Locationt/improved", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        .then((response) => response.json())
+        .then((response) => {
+          if(!response.status){
+            //warning, not found
+            toastr.warning('The location that you are adding is already added.', 'Warning');
+          }
+          else{
+            toastr.success(name +' is added successfully.', 'Success');
+          }
+        })
+        .catch((error) => {
+          //error, unexpected error happened.
+          toastr.error('Unexpected error occurred.', 'Error');
+        });
+        addLocationPanel.close(); //after the button is clicked the panel is closed.
+      });//validation for name characters is done.
+
+    }); //on drawend event is finished.
+
+      
+    //GET fetch
+    
+
   
   } //init function ended
   
+
   //e.feature.getGeometry().getCoordinate()  ---> when listening to the interaction instead of map
+  /*
+  API solution opened.
+  post istek atacaz
+  inside the submit button {
+    fetch
+  }
+  if(negative first)else(positive)
+  CORS: security port. modify/limit with, we only want post and update but not delete or get etc
+  programs.cs file--> write after addswager();  --> builder.Services.Addcors(x)  --->after app.UseCors("my-policy");
+
+  */
