@@ -27,9 +27,7 @@ label {
     width: 250px;
 }
 
-
 #selectLocationButton{
-    display: inline-block;
     position: absolute;
     background-color: #1d90cf;
     border: none;
@@ -40,6 +38,20 @@ label {
     display: inline-block;
     font-size: 16px;
     margin: 10px 52px;
+    cursor: pointer;
+}
+
+#queryLocationButton{
+    position: absolute;
+    background-color: #1d90cf;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 230px;
     cursor: pointer;
 }
 
@@ -57,30 +69,17 @@ label {
     cursor: pointer;
 }
 
-/*
-.ol-zoom-in{
-    position: absolute;
-}
-.ol-zoom-out{
-    position: absolute;
+.display{
+    display: none;
 }
 
-.ol-control button {
-    display: block;
-    margin: 1px;
-    margin-top: 100px;
-    padding: 0;
-    color: #fff;
-    font-weight: 700;
-    text-decoration: none;
-    font-size: inherit;
-    text-align: center;
-    height: 1.375em;
-    width: 1.375em;
-    line-height: .4em;
-    background-color: rgba(0,60,136,.5);
-    border: none;
-    border-radius: 2px;
+table, th, td{
+    border: 1px solid;
+    border-collapse: collapse;
 }
 
-*/
+.table-bordered{
+    margin-left: auto;
+    margin-right: auto;
+    
+}

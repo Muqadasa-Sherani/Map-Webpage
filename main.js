@@ -33,35 +33,33 @@ function init(){
 
     map.addInteraction(draw); //point object is added to the map but still hidden
 
-    fetch("https://localhost:7031/Locationt", {
+    fetch("https://localhost:7031/Locationt", { //all the coordinates from the database are shown as points on the map
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     })
     .then((response) => response.json()) //converts the response/output data into json.
-    .then(response=> /*console.log(response)*/{ // response/data is added to the map.
+    .then(response=> { // response/data is added to the map.
       /***To draw points on the map:
        * 1. Create a source, in this case a vector source, with the features you want to draw.
        * 2. Create a layer, in this case a vector layer, with the source from step 1, and the style you prefer.
        * 3. Add the style you perfer.***/
-      
-      //const features = [];
 
       for (i = 0; i < response.length; i++) {
-        let featureStyle = new ol.style.Style({
-          image: new ol.style.Circle({
+        let featureStyle = new ol.style.Style({ //the style of point is described
+            image: new ol.style.Circle({ //the points are circle and red color
             radius: 2,
             fill: new ol.style.Fill({color: 'red'})
           })
         });
-        let feature = new ol.Feature({
+        let feature = new ol.Feature({ //feature holds all the coordinates that are saved in the database.
           geometry: new ol.geom.Point(
             [response[i].x, response[i].y])
         });
 
-        feature.setStyle(featureStyle);
-        source.addFeature(feature);
+        feature.setStyle(featureStyle); //we give style to the feature (coordinates)
+        source.addFeature(feature); //we add the feature to our map.
       }
       // create the source and layer for features
       /*const vectorSource = new ol.source.Vector({
@@ -84,7 +82,7 @@ function init(){
       toastr.error('Unexpected error occurred.', 'Error');
     });// GET fetch finished
 
-    //Select Location Button when clicked-->>
+    //Add Location Button when clicked-->>
     document.getElementById("selectLocationButton").addEventListener("click", function(){
       //check for zoom
       var mapZoomLevel = map.getView().getZoom();
@@ -97,7 +95,7 @@ function init(){
       }
     });
 
-    draw.on("drawend", (e)=>{ // when draw/point is finished we set the point to inactive
+    draw.on("drawend", (e)=>{ // when draw/point is finished we set the point to inactive and panel is popped
       draw.setActive(false);
       
       var X = e.feature.getGeometry().getCoordinates()[0];
@@ -122,7 +120,9 @@ function init(){
           '</div>'
       }); //jspanel is created
 
-      document.getElementById("addButton").addEventListener("click", function(){
+      
+
+      document.getElementById("addButton").addEventListener("click", function(){ //the selected location is added to the database.
         var name = document.getElementById("name").value; //name value
 
         toastr.options.closeButton = true; //close icon of toaster notification.
@@ -167,9 +167,54 @@ function init(){
 
     }); //on drawend event is finished.
 
-      
-    //GET fetch
-    
+    let resultString = []; //result or response array is global.
+    document.getElementById("queryLocationButton").addEventListener('click', function(){ //we fetch all the data from the databse and show on the data table.
+
+      fetch("https://localhost:7031/Locationt", { //all the coordinates from the database are recieved
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => response.json()) //converts the response/output data into json.
+      .then(function(response){ // response/data is added to the map.
+
+        resultString = response;
+          var panel = jsPanel.create({      //jspanel is pop-upped.
+            id: "tablePanel",
+            headerTitle: 'Location Query',
+            theme: '#00205c',
+            contentSize: {
+                width: "800px",
+                height: "520px"
+            },
+            content: ' <table id="myTable"></table>'
+        }); //jspanel is created
+
+       console.log(resultString);
+
+        $(document).ready( function () {
+          $('#myTable').DataTable({
+            data: resultString,
+            columns: [
+              { data: 'id' },
+              { data: 'name' },
+              { data: 'x' },
+              { data: 'y' },
+              /*{ title: 'id' },
+              { title: 'name' },
+              { title: 'x' },
+              { title: 'y' }*/
+            ],
+          });
+        });
+      })
+      .catch((error) => {
+        //error, unexpected error happened.
+        toastr.error('Unexpected error occurred.', 'Error');
+      });// GET fetch finished
+
+    });
 
   
   } //init function ended

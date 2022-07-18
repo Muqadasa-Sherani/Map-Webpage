@@ -11,6 +11,13 @@
     <!--toastr js-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+    <!--data tables js-->
+    <script
+      type="text/javascript"
+      charset="utf8"
+      src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"
+    ></script>
+
     <!--toastr css-->
     <link
       rel="stylesheet"
@@ -23,14 +30,23 @@
     <!-- jsPanel CSS -->
     <link href="/resources/jspanel/dist/jspanel.css" rel="stylesheet" />
 
+    <!--data tables css-->
+    <link
+      rel="stylesheet"
+      href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css"
+    />
+
     <!--css-->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!--the buttons nav bar-->
     <div class="button">
       <button id="selectLocationButton">Add Location</button>
+      <button id="queryLocationButton">Query Locations</button>
     </div>
 
+    <!--the map-->
     <div id="js-map" class="map"></div>
 
     <!--openlayers javascript-->
