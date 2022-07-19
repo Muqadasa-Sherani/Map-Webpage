@@ -16,7 +16,7 @@ body{
     z-index: -1;
 }
 
-label {
+.formLabel {
     display: inline-block;
     width: 50px;
     text-align: left;
@@ -82,4 +82,14 @@ table, th, td{
     margin-left: auto;
     margin-right: auto;
     
+}
+
+.tabelFormLabel{
+    display: inline-block;
+    width: 110px;
+    text-align: left;
+}
+
+#deleteButton{
+    margin-left: 50px;
 }
