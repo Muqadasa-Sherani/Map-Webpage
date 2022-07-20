@@ -168,7 +168,7 @@ function init(){
     }); //on drawend event is finished.
 
     let resultString = []; //result or response array is global.
-    document.getElementById("queryLocationButton").addEventListener('click', function(){ //we fetch all the data from the databse and show on the data table.
+    document.getElementById("queryLocationButton").addEventListener('click', function(){ //we fetch all the data from the database and show on the data table.
       
       fetch("https://localhost:7031/Locationt", { //all the coordinates from the database are recieved
         method: 'GET',
@@ -180,7 +180,8 @@ function init(){
       .then(function(response){ // response/data is added to the map.
 
         resultString = response;
-          var panel = jsPanel.create({      //jspanel is pop-upped.
+          jsPanel.create({      //jspanel is pop-upped.
+            id: 'dataTablePanel',
             headerTitle: 'Location Query',
             theme: '#00205c',
             contentSize: {
@@ -198,111 +199,162 @@ function init(){
               { data: 'name' },
               { data: 'x' },
               { data: 'y' },
-            ],
-            /*columnDefs: [ //for buttons on each row. Edit and Delete buttons.
-              {
-                  targets: -1,
-                  defaultContent: '<button>Edit</button>',
-              },
-              {
-                targets: -1,
-                defaultContent: '<button>Delete</button>',
-              },
-            ],*/
+            ]
           });
 
           //on double clicking a row we pop-up another jspanel with the name and coordinates in input boxes
           $('#myTable tbody').on('dblclick', 'tr', function () {
             var data = table.row(this).data();
+            var thisName = table.row(this).data().name;
+            var thisX = table.row(this).data().x;
+            var thisY = table.row(this).data().y;
+            var thisId = table.row(this).data().id;
+            console.log(data);
 
-            //jspanel
+            //specific location data jspanel
             jsPanel.create({
+              id: 'locationDatapanel',
               headerTitle: 'Location Data',
               theme: '#00205c',
+              bDestroy: true,
               contentSize: {
                   width: "30%",
                   height: "30%"
               },
               content: ' <div class="form" >'+
-                      '<Label class="tabelFormLabel" >Name: </Label><input type="text" name="name" id="name" value="'+table.row(this).data().name+'">'+
+                      '<Label class="tabelFormLabel" >Name: </Label><input type="text" name="name" id="name" value="'+thisName+'" readonly >'+
                       '<br><br>'+
-                      '<Label class="tabelFormLabel" >X-coordinates: </Label><input type="number" name="x" id="x"value="'+table.row(this).data().x+'">'+
+                      '<Label class="tabelFormLabel" >X-coordinates: </Label><input type="number" name="x" id="x"value="'+thisX+'" readonly>'+
                       '<br><br>'+
-                      '<Label class="tabelFormLabel" >Y-coordinates: </Label><input type="number" name="y" id="y"value="'+table.row(this).data().y+'">'+
+                      '<Label class="tabelFormLabel" >Y-coordinates: </Label><input type="number" name="y" id="y"value="'+thisY+'" readonly>'+
                       '<br><br>'+
                       '<button id="editButton">Edit</button>'+
-                      '<button id="deleteButton">Delete</button>'+
+                      '<button id="deleteButton" class="marginLeft">Delete</button>'+
                       '</div>'
-            });//jspanel finish.
+            });//specific location data jspanel finish.
 
-            //////////////////////////////////////////////////////this onclick function does not work.
-            /*$('#myTable').on('click', '#deleteButton', function () {
+            //delete button on click
+            document.getElementById("deleteButton").addEventListener('click', function(){ 
+              console.log("hello in delete");
+              //a jspanel to validate the deletion of a location.
+               jsPanel.create({
+                 id: "deleteButtonPanel",
+                 headerTitle: 'Location Delete',
+                 theme: '#00205c',
+                 content: '<h2>Are you sure you want to delete location?</h2>'+
+                 '<button id="deleteYes">Yes, I am sure.</button>'+
+                 '<button id="deleteNo" class="marginLeft">No, I am not sure.</button>'
+               });
+
+               //if yes is clicked.
+               document.getElementById("deleteYes").addEventListener('click',function(){ //location is deleted.
+                 console.log("hello");
+
+                 //DELETE fetch
+                 fetch("https://localhost:7031/Locationt", {
+                   method: 'DELETE',
+                   headers: {
+                     'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify(data),
+                })
+                .then((response) => response.json())
+                .then((response) => {
+                  if(!response.status){
+                    //warning, not found
+                    toastr.warning('The location that you are deleting does not exist.', 'Warning');
+                  }
+                  else{
+                    toastr.success('Location is deleted successfully.', 'Success');
+                    table.row(this).delete(); //the row clicked on is deleted from the datattable.
+                    //document.getElementById("queryLocationButton").click(); imgeus code for refresh
+                    
+                  }
+                });//DELETE fetch finish
+
+                 deleteButtonPanel.close(); //after the yes button is clicked the panel is closed.
+                 locationDatapanel.close(); 
+
+               });//yes button onclick finish
+
+               //if no is clicked.
+               document.getElementById("deleteNo").addEventListener('click',function(){ //location is deleted.
+                deleteButtonPanel.close(); //after the no button is clicked the panel is closed.
+              });
+              
+            }); //delete button on click finish.
+
+            console.log("inside doubleclick: "+ table.row(this).data().name);
+
+            //edit button on click.
+            document.getElementById("editButton").addEventListener("click", function(){
+
+              locationDatapanel.close(); //previouse data panel is closed.
+
               jsPanel.create({
-                headerTitle: 'Location Delete',
+                id: 'editLocationPanel',
+                headerTitle: 'Edit Location Data',
                 theme: '#00205c',
-                content: '<h2>Are you sure you want to delete location?</h2>'+
-                '<button id="yes">Yes, I am sure.</button>'+
-                '<button id="no">No, I am not sure.</button>'
-              });
-          });*/
-
-          document.getElementById("deleteButton").addEventListener('click', function(){ //delete button on click
-            //a jspanel to validate the deletion of a location.
-             jsPanel.create({
-              id: "deleteButtonPanel",
-              headerTitle: 'Location Delete',
-              theme: '#00205c',
-              content: '<h2>Are you sure you want to delete location?</h2>'+
-              '<button id="yes">Yes, I am sure.</button>'+
-              '<button id="no">No, I am not sure.</button>'
-            });
-
-            //if yes is clicked.
-            document.getElementById("deleteButton").addEventListener('click', function(){ //location is deleted.
-              //Delete fetch
-              fetch("https://localhost:7031/Locationt", {
-                method: 'DELETE',
-                headers: {
-                  'Content-Type': 'application/json',
+                contentSize: {
+                    width: "30%",
+                    height: "30%"
                 },
-                body: JSON.stringify(data),
-              })
-              .then((response) => response.json())
-              .then((response) => {
-                if(!response.status){
-                  //warning, not found
-                  toastr.warning('The location that you are deleting does not exist.', 'Warning');
-                }
-                else{
-                  toastr.success('Location is deleted successfully.', 'Success');
-                  table.row(this).delete(); //the row clicked on is deleted from the datattable.
-                }
+                content:' <div class="form" >'+
+                        '<Label class="tabelFormLabel" >Name: </Label><input type="text" name="name" id="name" value="'+thisName+'">'+
+                        '<br><br>'+
+                        '<Label class="tabelFormLabel" >X-coordinates: </Label><input type="number" name="x" id="x"value="'+thisX+'">'+
+                        '<br><br>'+
+                        '<Label class="tabelFormLabel" >Y-coordinates: </Label><input type="number" name="y" id="y"value="'+thisY+'">'+
+                        '<br><br>'+
+                        '<button id="saveChangeButton">Save Changes</button>'+
+                        '<button id="modifyOnMapButton" class="marginLeft">Modify</button>'+
+                        '</div>'
+              });//jspanel finish.
+              
+              //Save Changes button onclick
+              document.getElementById("saveChangeButton").addEventListener("click", function(){
+                //new changed values from input boxes are defined.
+                var newName = document.getElementById("name").value;
+                var newX = document.getElementById("x").value;
+                var newY = document.getElementById("y").value;
+
+                let newData = {id: thisId, x: newX, y: newY, name: newName}; //new Data object.
+
+                //PUT fetch.
+                fetch("https://localhost:7031/Locationt", {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(newData)
+                })
+                .then((response) => response.json())
+                .then((response) => {
+
+                  if(!response.status){
+                    //warning, not found
+                    toastr.warning('The location that you are updating does not exist.', 'Warning');
+                  }
+                  else{
+                    toastr.success('Location is updated successfully.', 'Success');
+                    //table.row( this ).data( newData ).draw(); //the row clicked on is updated.
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
+                    setTimeout(function(){
+                      table.clear().rows.add(newData).draw();
+                      table.reload();
+                    }, 200);
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
+                  }
+                }); //PUT fetch finished.
                 
-              })
-              .catch((error) => {
-                //error, unexpected error happened.
-                toastr.error('Unexpected error occurred.', 'Error');
-              });
-              deleteButtonPanel.close(); //after the button is clicked the panel is closed.
-            });
+                editLocationPanel.close();//edit location panel is closed.
 
-          });
-
-          ////////////////////////////////////////////////////////////
+              });//save changes button onclick finish.
+              
+            });//edit button on click finish.
+            
 
           });//double click finish.
-
-          /////////////////////////////////////////////////////////////this does not work, if the onclick for delete is here.
-          /*$('#myTable').on('click', '#deleteButton', function () {
-            jsPanel.create({
-              headerTitle: 'Location Delete',
-              theme: '#00205c',
-              content: '<h2>Are you sure you want to delete location?</h2>'+
-              '<button id="yes">Yes, I am sure.</button>'+
-              '<button id="no">No, I am not sure.</button>'
-            });
-        });*/
-        ////////////////////////////////////////////////////////////////
 
         });//datatable finish
 
@@ -312,19 +364,7 @@ function init(){
         toastr.error('Unexpected error occurred.', 'Error');
       });// GET fetch finished
 
-      ///////////////////////////////////////////////////this does not work, if the onclick for delete is here.
-      /*document.getElementById("deleteButton").addEventListener('click', function(){ //delete button on click
-        jsPanel.create({
-          headerTitle: 'Location Delete',
-          theme: '#00205c',
-          content: '<h2>Are you sure you want to delete location?</h2>'+
-          '<button id="yes">Yes, I am sure.</button>'+
-          '<button id="no">No, I am not sure.</button>'
-        });
-      });*/
-      ////////////////////////////////////////////////
-
-    });
+    });//query location button onclick finished.
 
   
   } //init function ended
