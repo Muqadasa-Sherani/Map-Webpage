@@ -4,78 +4,64 @@ function init(){
 
   const raster = new ol.layer.Tile({ //Tile layer of the map
       source: new ol.source.OSM(),
-    });
-    
-    const source = new ol.source.Vector();
-
-    const vector = new ol.layer.Vector({ //vector layer of the map
-      source: source
-    });
+  });
   
-    const map = new ol.Map({ //the map object...
-      layers: [raster, vector], //...with its layers
-      target: 'js-map', 
-      view: new ol.View({
-        center: [3955818.045998468, 4724642.604322681],
-        zoom:6,
-      }),
-    });
+  const source = new ol.source.Vector();
+
+  const vector = new ol.layer.Vector({ //vector layer of the map
+    source: source
+  });
+
+  const map = new ol.Map({ //the map object...
+    layers: [raster, vector], //...with its layers
+    target: 'js-map', 
+    view: new ol.View({
+      center: [3955818.045998468, 4724642.604322681],
+      zoom:6,
+    }),
+  });
 
 
-    
-    let draw; // global so we can remove them later
-    draw = new ol.interaction.Draw({ //Point object made
-        source: source,
-        type: 'Point',
-    });
+  
+  let draw; // global so we can remove them later
+  draw = new ol.interaction.Draw({ //Point object made
+      source: source,
+      type: 'Point',
+  });
 
-    draw.setActive(false); //point on the map is inactive
+  draw.setActive(false); //point on the map is inactive
 
-    map.addInteraction(draw); //point object is added to the map but still hidden
+  map.addInteraction(draw); //point object is added to the map but still hidden
 
-    fetch("https://localhost:7031/Locationt", { //all the coordinates from the database are shown as points on the map
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then((response) => response.json()) //converts the response/output data into json.
-    .then(response=> { // response/data is added to the map.
-      /***To draw points on the map:
-       * 1. Create a source, in this case a vector source, with the features you want to draw.
-       * 2. Create a layer, in this case a vector layer, with the source from step 1, and the style you prefer.
-       * 3. Add the style you perfer.***/
+  fetch("https://localhost:7031/Locationt", { //all the coordinates from the database are shown as points on the map
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then((response) => response.json()) //converts the response/output data into json.
+  .then(response=> { // response/data is added to the map.
+    /***To draw points on the map:
+     * 1. Create a source, in this case a vector source, with the features you want to draw.
+     * 2. Create a layer, in this case a vector layer, with the source from step 1, and the style you prefer.
+     * 3. Add the style you perfer.***/
 
-      for (i = 0; i < response.length; i++) {
-        let featureStyle = new ol.style.Style({ //the style of point is described
-            image: new ol.style.Circle({ //the points are circle and red color
-            radius: 2,
-            fill: new ol.style.Fill({color: 'red'})
-          })
-        });
-        let feature = new ol.Feature({ //feature holds all the coordinates that are saved in the database.
-          geometry: new ol.geom.Point(
-            [response[i].x, response[i].y])
-        });
-
-        feature.setStyle(featureStyle); //we give style to the feature (coordinates)
-        source.addFeature(feature); //we add the feature to our map.
-      }
-      // create the source and layer for features
-      /*const vectorSource = new ol.source.Vector({
-        features: features
-      });
-      const vectorLayer = new ol.layer.Vector({
-        source: vectorSource,
-        style: new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: 2,
-            fill: new ol.style.Fill({color: 'red'})
-          })
+    for (i = 0; i < response.length; i++) {
+      let featureStyle = new ol.style.Style({ //the style of point is described
+          image: new ol.style.Circle({ //the points are circle and red color
+          radius: 2,
+          fill: new ol.style.Fill({color: 'red'})
         })
-      });*/
-      // vector layer is added to the map
-      //map.addLayer(vectorLayer);
+      });
+      let feature = new ol.Feature({ //feature holds all the coordinates that are saved in the database.
+        geometry: new ol.geom.Point(
+          [response[i].x, response[i].y])
+      });
+
+      feature.setStyle(featureStyle); //we give style to the feature (coordinates)
+      source.addFeature(feature); //we add the feature to our map.
+    }
+    
     })
     .catch((error) => {
       //error, unexpected error happened.
@@ -302,23 +288,21 @@ function init(){
                 content:' <div class="form" >'+
                         '<Label class="tabelFormLabel" >Name: </Label><input type="text" name="name" id="name" value="'+thisName+'">'+
                         '<br><br>'+
-                        '<Label class="tabelFormLabel" >X-coordinates: </Label><input type="number" name="x" id="x"value="'+thisX+'">'+
+                        '<Label class="tabelFormLabel" >X-coordinates: </Label><input type="number" name="x" id="x"value="'+thisX+'" readonly>'+
                         '<br><br>'+
-                        '<Label class="tabelFormLabel" >Y-coordinates: </Label><input type="number" name="y" id="y"value="'+thisY+'">'+
+                        '<Label class="tabelFormLabel" >Y-coordinates: </Label><input type="number" name="y" id="y"value="'+thisY+'" readonly>'+
                         '<br><br>'+
-                        '<button id="saveChangeButton">Save Changes</button>'+
+                        '<button id="saveDeleteChangeButton">Save Changes</button>'+
                         '<button id="modifyOnMapButton" class="marginLeft">Modify</button>'+
                         '</div>'
               });//jspanel finish.
               
               //Save Changes button onclick
-              document.getElementById("saveChangeButton").addEventListener("click", function(){
+              document.getElementById("saveDeleteChangeButton").addEventListener("click", function(){
                 //new changed values from input boxes are defined.
                 var newName = document.getElementById("name").value;
-                var newX = document.getElementById("x").value;
-                var newY = document.getElementById("y").value;
 
-                let newData = {id: thisId, x: newX, y: newY, name: newName}; //new Data object.
+                let newData = {id: thisId, x: thisX, y: thisY, name: newName}; //new Data object.
 
                 //PUT fetch.
                 fetch("https://localhost:7031/Locationt", {
@@ -339,10 +323,12 @@ function init(){
                     toastr.success('Location is updated successfully.', 'Success');
                     //table.row( this ).data( newData ).draw(); //the row clicked on is updated.
                     ////////////////////////////////////////////////////////////////////////////////////////////////////
+                    /*
                     setTimeout(function(){
                       table.clear().rows.add(newData).draw();
                       table.reload();
                     }, 200);
+                    */
                     ////////////////////////////////////////////////////////////////////////////////////////////////////
                   }
                 }); //PUT fetch finished.
@@ -350,6 +336,90 @@ function init(){
                 editLocationPanel.close();//edit location panel is closed.
 
               });//save changes button onclick finish.
+
+              //modify button on click
+              document.getElementById("modifyOnMapButton").addEventListener("click", function(){
+                
+                editLocationPanel.close();//edit location panel is closed.
+                dataTablePanel.close(); //data table is closed.
+
+                var coordinate = [thisX, thisY];
+                map.getView().setCenter(coordinate); //we center and zoom on this point
+                //map.feature.getGeometry().setCoordinates() = coordinate;
+                map.getView().setZoom(16); 
+
+                draw.setActive(true); //point on map shown.
+
+                draw.on("drawend", (e)=>{ // when draw/point is finished we set the point to inactive and panel is popped
+                  draw.setActive(false);
+                  
+                  //new coordinates are set.
+                  thisX = e.feature.getGeometry().getCoordinates()[0];
+                  thisY = e.feature.getGeometry().getCoordinates()[1];
+
+                  jsPanel.create({
+                    id: 'modifyCoordinatesPanel',
+                    headerTitle: 'Updated Location Coordinates',
+                    theme: '#00205c',
+                    contentSize: {
+                        width: "30%",
+                        height: "30%"
+                    },
+                    content:' <div class="form" >'+
+                            '<Label class="tabelFormLabel" >Name: </Label><input type="text" name="name" id="name" value="'+thisName+'" readonly>'+
+                            '<br><br>'+
+                            '<Label class="tabelFormLabel" >X-coordinates: </Label><input type="number" name="x" id="x"value="'+thisX+'" readonly>'+
+                            '<br><br>'+
+                            '<Label class="tabelFormLabel" >Y-coordinates: </Label><input type="number" name="y" id="y"value="'+thisY+'" readonly>'+
+                            '<br><br>'+
+                            '<button id="saveModifyChangeButton">Save Changes</button>'+
+                            '</div>'
+                  });//jspanel finish.
+
+                  //modify panel save changes on click
+                  document.getElementById("saveModifyChangeButton").addEventListener("click", function(){
+                    //new changed values from input boxes are defined.
+                    //var newName = document.getElementById("name").value;
+
+                    let newData = {id: thisId, x: thisX, y: thisY, name: thisName}; //new Data object.
+
+                    //PUT fetch.
+                    fetch("https://localhost:7031/Locationt", {
+                      method: 'PUT',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify(newData)
+                    })
+                    .then((response) => response.json())
+                    .then((response) => {
+
+                      if(!response.status){
+                        //warning, not found
+                        toastr.warning('The location that you are updating does not exist.', 'Warning');
+                      }
+                      else{
+                        toastr.success('Location is updated successfully.', 'Success');
+                        //table.row( this ).data( newData ).draw(); //the row clicked on is updated.
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////
+                        /*
+                        setTimeout(function(){
+                          table.clear().rows.add(newData).draw();
+                          table.reload();
+                        }, 200);
+                        */
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////
+                      }
+                    }); //PUT fetch finished.
+                    
+                        //editLocationPanel.close();//edit location panel is closed.
+                        modifyCoordinatesPanel.close();
+
+                      });
+
+                    });
+
+              }); //modify on click finished.
               
             });//edit button on click finish.
             
