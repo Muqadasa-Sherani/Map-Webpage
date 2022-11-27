@@ -11,4 +11,5 @@ The database table when "Query Location" is clicked.
 Modifying the location popup.
 
 ![image](https://user-images.githubusercontent.com/97336771/204154104-645ae1e8-9e51-466f-b93a-25443e9bf970.png)
+
 Adding a location.
